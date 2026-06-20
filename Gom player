@@ -1,0 +1,60 @@
+-- Tạo GUI cho Điện thoại (Không có nút tắt/mở, luôn hiện)
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local TextLabel = Instance.new("TextLabel")
+local BringButton = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
+local ButtonCorner = Instance.new("UICorner")
+
+-- Cấu hình vị trí Menu (Nằm ở góc giữa bên phải màn hình để dễ bấm)
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+MainFrame.Name = "GomPlayerMenu"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Position = UDim2.new(0.7, 0, 0.4, 0) -- Vị trí trên màn hình đt
+MainFrame.Size = UDim2.new(0, 160, 0, 100)
+MainFrame.Active = true
+MainFrame.Draggable = true -- Bạn có thể dùng tay kéo menu này đi vị trí khác nếu vướng
+
+UICorner.Parent = MainFrame
+
+-- Menu chữ tiêu đề
+TextLabel.Parent = MainFrame
+TextLabel.BackgroundTransparency = 1
+TextLabel.Position = UDim2.new(0, 0, 0.05, 0)
+TextLabel.Size = UDim2.new(1, 0, 0.3, 0)
+TextLabel.Font = Enum.Font.SourceSansBold
+TextLabel.Text = "MENU GOM NGƯỜI"
+TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel.TextSize = 16
+
+-- Nút bấm Gom Người
+BringButton.Name = "BringButton"
+BringButton.Parent = MainFrame
+BringButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+BringButton.Position = UDim2.new(0.1, 0, 0.45, 0)
+BringButton.Size = UDim2.new(0.8, 0, 0.45, 0)
+BringButton.Font = Enum.Font.SourceSansBold
+BringButton.Text = "GOM TẤT CẢ"
+BringButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+BringButton.TextSize = 18
+
+ButtonCorner.Parent = BringButton
+
+-- Chức năng gom người chơi
+BringButton.MouseButton1Click:Connect(function()
+    local localPlayer = game.Players.LocalPlayer
+    if not localPlayer.Character or not localPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+    
+    local targetPos = localPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5) -- Đưa ra trước mặt 5 poke
+
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= localPlayer then
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.CFrame = targetPos
+            end
+        end
+    end
+end)
