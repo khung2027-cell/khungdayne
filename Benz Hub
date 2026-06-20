@@ -1,0 +1,234 @@
+--[[
+    CRE: KHƯNG IS
+    Blox Fruits Script - Fruit Tab
+--]]
+
+-- Khởi tạo GUI Chính
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleButton = Instance.new("TextButton")
+local MainMenu = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local CreLabel = Instance.new("TextLabel")
+local ContentScroll = Instance.new("ScrollingFrame")
+local UIListLayout = Instance.new("UIListLayout")
+
+-- Cấu hình ScreenGui
+ScreenGui.Name = "KhungIs_FruitMenu"
+ScreenGui.Parent = game:GetService("CoreGui") or game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+-- 1. NÚT BẬT/TẮT MENU (Nằm ở góc trên bên trái, chữ K)
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Parent = ScreenGui
+ToggleButton.Position = UDim2.new(0, 15, 0, 15)
+ToggleButton.Size = UDim2.new(0, 40, 0, 40)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ToggleButton.TextColor3 = Color3.fromRGB(0, 255, 150)
+ToggleButton.Text = "K"
+ToggleButton.Font = Enum.Font.SourceSansBold
+ToggleButton.TextSize = 24
+ToggleButton.BorderSizePixel = 2
+ToggleButton.BorderColor3 = Color3.fromRGB(0, 255, 150)
+
+-- Bo góc cho nút
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 8)
+ToggleCorner.Parent = ToggleButton
+
+-- 2. MENU CHÍNH (Khoá ở giữa màn hình)
+MainMenu.Name = "MainMenu"
+MainMenu.Parent = ScreenGui
+MainMenu.AnchorPoint = Vector2.new(0.5, 0.5)
+MainMenu.Position = UDim2.new(0.5, 0, 0.5, 0) -- Giữa màn hình
+MainMenu.Size = UDim2.new(0, 350, 0, 400)
+MainMenu.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainMenu.BorderSizePixel = 0
+MainMenu.Visible = true
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.Parent = MainMenu
+
+-- Tiêu đề Menu
+Title.Name = "Title"
+Title.Parent = MainMenu
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Title.Text = "TAB : FRUITS"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 20
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 12)
+TitleCorner.Parent = Title
+
+-- Credit (Cre: khưng is)
+CreLabel.Name = "CreLabel"
+CreLabel.Parent = MainMenu
+CreLabel.Position = UDim2.new(0, 0, 1, -25)
+CreLabel.Size = UDim2.new(1, 0, 0, 25)
+CreLabel.BackgroundTransparency = 1
+CreLabel.Text = "cre : khưng is"
+CreLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+CreLabel.Font = Enum.Font.SourceSansItalic
+CreLabel.TextSize = 14
+CreLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+-- 3. KHU VỰC VUỐT (Scrolling Frame)
+ContentScroll.Name = "ContentScroll"
+ContentScroll.Parent = MainMenu
+ContentScroll.Position = UDim2.new(0, 10, 0, 50)
+ContentScroll.Size = UDim2.new(1, -20, 1, -85)
+ContentScroll.BackgroundTransparency = 1
+ContentScroll.CanvasSize = UDim2.new(0, 0, 0, 450) -- Cho phép vuốt lên xuống
+ContentScroll.ScrollBarThickness = 6
+ContentScroll.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 150)
+
+UIListLayout.Parent = ContentScroll
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 15)
+
+-- Hàm tạo Button chức năng tiện lợi
+local function CreateFunctionButton(name, text, callback)
+    local btn = Instance.new("TextButton")
+    btn.Name = name
+    btn.Parent = ContentScroll
+    btn.Size = UDim2.new(1, -10, 0, 50)
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    btn.Text = text .. " : OFF"
+    btn.TextColor3 = Color3.fromRGB(255, 100, 100)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 16
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
+    
+    local enabled = false
+    btn.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        if enabled then
+            btn.BackgroundColor3 = Color3.fromRGB(50, 70, 50)
+            btn.TextColor3 = Color3.fromRGB(100, 255, 100)
+            btn.Text = text .. " : ON"
+        else
+            btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            btn.TextColor3 = Color3.fromRGB(255, 100, 100)
+            btn.Text = text .. " : OFF"
+        end
+        task.spawn(callback, enabled)
+    end)
+    return btn
+end
+
+-- 4. LOGIC XỬ LÝ ĐÓNG BẬT MENU
+ToggleButton.MouseButton1Click:Connect(function()
+    MainMenu.Visible = not MainMenu.Visible
+end)
+
+-- ========================================================
+-- CHỨC NĂNG 1: ESP TRÁI ÁC QUỶ
+-- ========================================================
+local espFolder = Instance.new("Folder", game.CoreGui)
+
+local function createESP(object)
+    if not object:FindFirstChild("FruitESP") then
+        local bbg = Instance.new("BillboardGui", espFolder)
+        bbg.Name = "FruitESP"
+        bbg.Adornee = object
+        bbg.Size = UDim2.new(0, 200, 0, 50)
+        bbg.AlwaysOnTop = true
+        
+        local txt = Instance.new("TextLabel", bbg)
+        txt.Size = UDim2.new(1, 0, 1, 0)
+        txt.BackgroundTransparency = 1
+        txt.Text = "[🍇] " .. object.Name
+        txt.TextColor3 = Color3.fromRGB(255, 0, 255)
+        txt.Font = Enum.Font.SourceSansBold
+        txt.TextSize = 16
+    end
+end
+
+local espEnabled = false
+CreateFunctionButton("EspFruitBtn", "ESP Trái Ác Quỷ", function(state)
+    espEnabled = state
+    if not espEnabled then
+        espFolder:ClearAllChildren()
+    else
+        -- Quét trái có sẵn trên map
+        for _, v in pairs(workspace:GetChildren()) do
+            if v:IsA("Tool") or (v:IsA("Model") and string.find(string.lower(v.Name), "fruit")) then
+                createESP(v)
+            end
+        end
+    end
+end)
+
+-- Lắng nghe trái mới xuất hiện cho ESP
+workspace.ChildAdded:Connect(function(child)
+    if espEnabled then
+        task.wait(0.5)
+        if child:IsA("Tool") or (child:IsA("Model") and string.find(string.lower(child.Name), "fruit")) then
+            createESP(child)
+        end
+    end
+end)
+
+
+-- ========================================================
+-- CHỨC NĂNG 2: BAY NHẶT TRÁI SPAWN (Tự động bay tới)
+-- ========================================================
+local function getFruitSpawn()
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:IsA("Tool") and string.find(string.lower(v.Name), "fruit") then
+            return v
+        end
+    end
+    return nil
+end
+
+local autoSpawnEnabled = false
+CreateFunctionButton("AutoSpawnBtn", "Bay Nhặt Trái Spawn", function(state)
+    autoSpawnEnabled = state
+    while autoSpawnEnabled do
+        task.wait(0.5)
+        local p = game.Players.LocalPlayer
+        local character = p.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local fruit = getFruitSpawn()
+            if fruit and fruit:FindFirstChild("Handle") then
+                -- Bay mượt bằng cách đổi CFrame trực tiếp hoặc Tween (ở đây dùng CFrame trực tiếp để nhanh gọn)
+                character.HumanoidRootPart.CFrame = fruit.Handle.CFrame + Vector3.new(0, 2, 0)
+            end
+        end
+    end
+end)
+
+
+-- ========================================================
+-- CHỨC NĂNG 3: TELE TRÁI BỊ VỨT (Dịch chuyển tới trái rơi)
+-- ========================================================
+-- Trong Blox Fruits, trái bị vứt (dropped) thường nằm trong Workspace dưới dạng Model hoặc Tool giống trái spawn.
+-- Chức năng này sẽ quét liên tục và đưa bạn tới vị trí đó ngay lập tức.
+local teleDroppedEnabled = false
+CreateFunctionButton("TeleDroppedBtn", "Tele Trái Bị Vứt", function(state)
+    teleDroppedEnabled = state
+    while teleDroppedEnabled do
+        task.wait(0.5)
+        local p = game.Players.LocalPlayer
+        local character = p.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            for _, v in pairs(workspace:GetChildren()) do
+                -- Trái vứt thường là một Model chứa chữ "Fruit" hoặc một cây Tool rơi tự do
+                if (v:IsA("Model") or v:IsA("Tool")) and string.find(string.lower(v.Name), "fruit") then
+                    local targetPart = v:FindFirstChild("Handle") or v:FindFirstChildWhichIsA("BasePart")
+                    if targetPart then
+                        character.HumanoidRootPart.CFrame = targetPart.CFrame
+                        break -- Ưu tiên nhặt từng trái một
+                    end
+                end
+            end
+        end
+    end
+end)
