@@ -1,0 +1,157 @@
+-- [[ CREDIT: KHUNG KS ]] --
+-- [[ SCRIPT BLOX FRUITS MOBILE - FRUITS TAB ]] --
+
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+
+-- Tạo Cửa sổ Menu rộng rãi, tự tương thích màn hình điện thoại
+local Window = OrionLib:MakeWindow({
+    Name = "Khung KS Hub - Blox Fruits Mobile", 
+    HidePremium = false, 
+    SaveConfig = true, 
+    ConfigFolder = "KhungKSHub",
+    IntroText = "Khung KS Hub"
+})
+
+-- Tạo Tab Fruits
+local FruitTab = Window:MakeTab({
+    Name = "Fruits",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+-- Biến lưu trạng thái chức năng
+local ESP_Enabled = false
+local TeleportingToSpawned = false
+
+-- HÀM HỖ TRỢ: Tìm trái ác quỷ trên bản đồ
+local function GetSpawnedFruit()
+    for _, obj in pairs(workspace:GetChildren()) do
+        if obj:IsA("Tool") and (string.find(obj.Name, "Fruit") or string.find(obj.name, "Fruit")) then
+            return obj
+        end
+    end
+    if workspace:FindFirstChild("Fruits") then
+        for _, obj in pairs(workspace.Fruits:GetChildren()) do
+            if obj:IsA("Tool") then return obj end
+        end
+    end
+    return nil
+end
+
+-- ====================================================
+-- CHỨC NĂNG 1: ESP Trái Ác Quỷ + Hiện số mét
+-- ====================================================
+FruitTab:AddToggle({
+    Name = "ESP Trái Ác Quỷ (Hiện Số Mét)",
+    Default = false,
+    Callback = function(Value)
+        ESP_Enabled = Value
+        
+        if not Value then
+            for _, v in pairs(workspace:GetChildren()) do
+                if v:FindFirstChild("FruitESP") then v.FruitESP:Destroy() end
+            end
+            return
+        end
+
+        task.spawn(function()
+            while ESP_Enabled do
+                for _, obj in pairs(workspace:GetChildren()) do
+                    if obj:IsA("Tool") and (string.find(obj.Name, "Fruit") or string.find(obj.name, "Fruit")) then
+                        if not obj:FindFirstChild("FruitESP") then
+                            local bbg = Instance.new("BillboardGui", obj)
+                            bbg.Name = "FruitESP"
+                            bbg.AlwaysOnTop = true
+                            bbg.Size = UDim2.new(0, 200, 0, 50)
+                            bbg.StudsOffset = Vector3.new(0, 3, 0)
+
+                            local txt = Instance.new("TextLabel", bbg)
+                            txt.Size = UDim2.new(1, 0, 1, 0)
+                            txt.BackgroundTransparency = 1
+                            txt.TextColor3 = Color3.fromRGB(255, 0, 128) -- Màu hồng nổi bật
+                            txt.TextSize = 14
+                            txt.Font = Enum.Font.SourceSansBold
+                        end
+                        
+                        if obj:FindFirstChild("FruitESP") and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            local pPart = game.Players.LocalPlayer.Character.HumanoidRootPart
+                            local distance = math.floor((obj.Handle.Position - pPart.Position).Magnitude)
+                            obj.FruitESP.TextLabel.Text = "[ " .. obj.Name .. " ]\n" .. tostring(distance) .. "m"
+                        end
+                    end
+                end
+                task.wait(0.5)
+            end
+        end)
+    end    
+})
+
+-- ====================================================
+-- CHỨC NĂNG 2: Bay xuyên tường nhận trái Spawn
+-- ====================================================
+FruitTab:AddToggle({
+    Name = "NoClip + Auto Nhặt Trái Spawn",
+    Default = false,
+    Callback = function(Value)
+        TeleportingToSpawned = Value
+        
+        -- Bật/Tắt NoClip (Xuyên tường để không bị kẹt địa hình)
+        local noclipLoop
+        if Value then
+            noclipLoop = game:GetService("RunService").Stepped:Connect(function()
+                if game.Players.LocalPlayer.Character then
+                    for _, part in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+                        if part:IsA("BasePart") then part.CanCollide = false end
+                    end
+                end
+            end)
+        else
+            if noclipLoop then noclipLoop:Disconnect() end
+        end
+
+        -- Teleport đến vị trí trái
+        task.spawn(function()
+            while TeleportingToSpawned do
+                local fruit = GetSpawnedFruit()
+                if fruit and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = fruit.Handle.CFrame + Vector3.new(0, 2, 0)
+                end
+                task.wait(0.2)
+            end
+        end)
+    end    
+})
+
+-- ====================================================
+-- CHỨC NĂNG 3: Teleport Trái Vứt (Người khác thả ra)
+-- ====================================================
+FruitTab:AddButton({
+    Name = "Teleport Trái Vứt (Bấm để Tele)",
+    Callback = function()
+        local fruit = GetSpawnedFruit()
+        if fruit then
+            if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = fruit.Handle.CFrame
+                OrionLib:MakeNotification({
+                    Name = "khung ks Hub",
+                    Content = "Đã dịch chuyển tới: " .. fruit.Name,
+                    Image = "rbxassetid://4483345998",
+                    Time = 3
+                })
+            end
+        else
+            OrionLib:MakeNotification({
+                Name = "khung ks Hub",
+                Content = "Không tìm thấy trái nào trên đất!",
+                Image = "rbxassetid://4483345998",
+                Time = 3
+            })
+        end
+    end
+})
+
+-- Ghi nhận Credit ở góc Menu
+FruitTab:AddParagraph("Credit","Script được làm bởi: khung ks")
+
+-- Khởi tạo Menu
+OrionLib:Init()
