@@ -1,0 +1,69 @@
+-- SERVICES
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+-- VARIABLES
+local localPlayer = Players.LocalPlayer
+local isGomNguoiChoi = false -- Trạng thái bật/tắt
+
+-- TẠO MENU CHỮ (GUI)
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MenuGomNguoiChoi"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = localPlayer:WaitForChild("PlayerGui")
+
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(0, 300, 0, 50)
+statusLabel.Position = UDim2.new(0.5, -150, 0.1, 0) -- Nằm ở giữa phía trên màn hình
+statusLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+statusLabel.BackgroundTransparency = 0.4
+statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+statusLabel.Font = Enum.Font.SourceSansBold
+statusLabel.TextSize = 20
+statusLabel.Text = "MENU GOM NGƯỜI CHƠI [Phím M]: TẮT"
+statusLabel.Parent = screenGui
+
+-- HÀM GOM NGƯỜI CHƠI VỀ VỊ TRÍ BẢN THÂN
+local function gomNguoiChoi()
+	local character = localPlayer.Character
+	if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+	local myPos = character.HumanoidRootPart.CFrame
+
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= localPlayer then
+			local pChar = player.Character
+			if pChar and pChar:FindFirstChild("HumanoidRootPart") then
+				-- Gom người chơi khác về phía trước mặt bạn một chút để tránh kẹt
+				pChar.HumanoidRootPart.CFrame = myPos * CFrame.new(0, 0, -3)
+			end
+		end
+	end
+end
+
+-- LẶP LẠI LIÊN TỤC NẾU BẬT
+task.spawn(function()
+	while true do
+		if isGomNguoiChoi then
+			gomNguoiChoi()
+		end
+		task.wait(0.1) -- Cập nhật vị trí mỗi 0.1 giây
+	end
+end)
+
+-- LẮNG NGHE SỰ KIỆN NHẤN PHÍM M ĐỂ BẬT/TẮT
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	
+	if input.KeyCode == Enum.KeyCode.M then
+		isGomNguoiChoi = not isGomNguoiChoi -- Đảo trạng thái
+		
+		if isGomNguoiChoi then
+			statusLabel.Text = "MENU GOM NGƯỜI CHƠI [Phím M]: BẬT"
+			statusLabel.TextColor3 = Color3.fromRGB(0, 255, 0) -- Chữ màu xanh lá khi bật
+		else
+			statusLabel.Text = "MENU GOM NGƯỜI CHƠI [Phím M]: TẮT"
+			statusLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Chữ màu đỏ khi tắt
+		end
+	end
+end)
